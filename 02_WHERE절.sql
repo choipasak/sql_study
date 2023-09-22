@@ -55,6 +55,14 @@ SELECT first_name, hire_date
 FROM employees
 WHERE hire_date LIKE '___05%'; -- _을 3개 붙여서 /포함 3자리 이후에(= 월이 05인) 05인 데이터를 조회하고 싶다
 
+-- null인지 아닌지 확인해주는 키워드
+-- IS NULL (NULL값을 찾음)
+SELECT * FROM employees
+WHERE manager_id IS NULL;
+
+SELECT * FROM employees
+WHERE commission_pct IS NOT NULL;
+
 -- AND, OR
 -- AND가 OR보다 연산 순서가 빠름.
 SELECT * FROM employees
