@@ -11,6 +11,7 @@ FROM dual;
 SELECT
     TRUNC(3.1415, 3), TRUNC(45.923, 0), TRUNC(49.984, -1)
 FROM dual;
+-- 결과: 3.141	45	40
 
 -- ABS (절대값)
 SELECT ABS(-34) FROM dual;

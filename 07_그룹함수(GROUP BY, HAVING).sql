@@ -91,9 +91,9 @@ SELECT
     department_id,
     AVG(salary) AS 평균
 FROM employees
-WHERE department_id >= 50
+WHERE department_id >= 50 -- 부서 아이디가 50 이상인 것들을 그룹화 시키고,
 GROUP BY job_id, department_id
-HAVING AVG(salary) >= 5000
+HAVING AVG(salary) >= 5000 -- 그룹 월급 평균이 5000 이상만 조회
 ORDER BY department_id DESC;
 
 /*
