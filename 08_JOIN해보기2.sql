@@ -87,7 +87,7 @@ WHERE a.job = 'scientist';
 -- 동일 테이블 컬럼을 통해 기존에 존재하는 값을 매칭시켜 가져올 때 사용합니다.
 SELECT
     e1.employee_id, e1.first_name, e1.manager_id,
-    e2.first_name, e2.employee_id
+    e2.employee_id, e2.first_name
 FROM employees e1
 JOIN employees e2
 ON e1.manager_id = e2.employee_id

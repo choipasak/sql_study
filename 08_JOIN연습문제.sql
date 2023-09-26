@@ -99,6 +99,7 @@ FROM employees e CROSS JOIN departments d; -- 2889개의 행 출력됨
 급여, 부서명, 근무지를 출력하세요. (Alias를 사용)
 */
 SELECT
+    e.job_id,
     e.employee_id,
     e.first_name,
     e.salary,
@@ -147,7 +148,8 @@ SELECT
     e1.first_name,
     e2.first_name AS manager_name
 FROM employees e1 JOIN employees e2
-ON e1.employee_id = e2.manager_id;
+ON e1.employee_id = e2.manager_id
+ORDER BY e2.first_name ASC;
 
 /*
 문제 11. 
@@ -155,13 +157,13 @@ ON e1.employee_id = e2.manager_id;
 --매니저 아이디가 없는 사람은 배제하고 급여는 역순으로 출력하세요
 */
 SELECT
-    e2.manager_id AS manager_nums,
-    e1.first_name AS manager_name,
-    e1.salary
+    e1.manager_id AS manager_nums,
+    e2.first_name AS manager_name,
+    e2.salary
 FROM employees e2 LEFT JOIN employees e1
-ON e2.manager_id = e1.employee_id
-WHERE e2.manager_id IS NOT NULL
-ORDER BY e1.salary DESC;
+ON e1.manager_id = e2.employee_id
+WHERE e1.manager_id IS NOT NULL
+ORDER BY e2.salary DESC;
 
 
 
