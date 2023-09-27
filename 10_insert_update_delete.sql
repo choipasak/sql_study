@@ -99,7 +99,7 @@ WHERE employee_id = 103; -- 컬럼을 지정할 필요가 없음: 한 행을 다 지우기 때문
 -- DELETE (서브 쿼리 사용)
 DELETE FROM emps
 WHERE department_id = (SELECT department_id FROM departments
-                       WHERE department_id = 'IT');
+                       WHERE department_name = 'IT');
 
 
 

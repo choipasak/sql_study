@@ -128,58 +128,81 @@ WHEN NOT MATCHED THEN
     b.email, b.phone_number, b.hire_date, b.job_id,
     b.salary, b.commission_pct, b.manager_id, b.department_id);
 
+-- 1번
 CREATE TABLE DEPTS AS (SELECT * FROM departments);
 
 SELECT * FROM DEPTS;
 
-INSERT INTO DEPTS
-    VALUES(320, '영업', 303, 1700);
+INSERT INTO DEPTS -- 여기에 컬럼 추가해서 원하는 컬럼에만 값을 줄 수 있음.
+    VALUES(320, '영업', 303, 1700); -- 값만 바꿔서 행 5개 추가했음.
 
 -- 2번
+
+-- 2-1번
 UPDATE DEPTS
 SET department_name = 'IT bank'
 WHERE department_name = 'IT Support';
 
+-- 2-2번
 UPDATE DEPTS
 SET manager_id = 301
 WHERE department_id = 290;
 
+-- 2-3번
 UPDATE DEPTS
 SET department_name = 'IT Help', manager_id = 303, location_id = 1800
 WHERE department_name = 'IT Helpdesk';
 
+-- 2-4번
 UPDATE DEPTS
 SET manager_id = 301
 WHERE department_id >= 290;
+-- OR연산자를 이용해서 WHERE절에 쭉 나열 할 수도 있지만!
+-- department_id IN (290, 300, 310, 320); 으로 작성 가능!
 
 -- 3번
+
+-- 3-1번
+-- 삭제의 조건은 항상 PRIMARY_KEY로 합니다.
 DELETE FROM DEPTS
 WHERE department_id = 320;
+/*
+근데 만약 department_id를 모른다는 가정 -> 서브 쿼리 사용
+DELETE FROM DEPTS
+WHERE department_id = (SELECT department_id FROM DEPTS
+                        WHERE department_name = '영업');
+*/
 
 SELECT * FROM DEPTS;
 
+-- 3-2번
 DELETE FROM DEPTS
 WHERE department_id = 220;
 
 -- 4번
--- 먼저 사본 테이블 만들기
+-- 먼저 사본 테이블 만들기 -> 여기서 DEPTS 테이블을 롤백하고 사본 테이블을 만들었어야함.
+-- 그래야 MERGE할 때, ON조건에서 department_id가 같다고 줄 수 있었음ㅠㅠ
 CREATE TABLE DEPTSCOPY AS (SELECT * FROM DEPTS);
 
 SELECT * FROM DEPTSCOPY;
 
+-- 4-1번
 DELETE FROM DEPTSCOPY
 WHERE department_id > 200;
 
+-- 4-2번
 UPDATE DEPTSCOPY
 SET manager_id = 100
 WHERE manager_id IS NOT NULL;
 
+-- 4-3번
 UPDATE DEPTSCOPY
 SET department_id = 110
 WHERE department_name = 'Accounting';
 
 SELECT * FROM DEPTSCOPY;
 
+-- 4-4번
 MERGE INTO DEPTS d -- (머지를 할 타겟 테이블)의 별칭 a
     USING -- 병합시킬 데이터
         (SELECT * FROM departments) dp -- 병합하고자 하는 데이터를 서브쿼리로 표현, 테이블 이름이 들어와도 된다.
@@ -191,26 +214,40 @@ WHEN MATCHED THEN -- ON조건이 일치하는 경우에는 타겟 테이블에 이렇게 실행하라. �
         d.manager_id = dp.manager_id,
         d.location_id = dp.location_id
 WHEN NOT MATCHED THEN
-    INSERT /*속성(컬럼)이 들어감*/ VALUES
-    (dp.department_id, dp.department_name, dp.manager_id, dp.location_id);
+    INSERT /*컬럼을 지정하길 원한다면: 속성(컬럼)이 들어감*/
+    VALUES
+    (dp.department_id, dp.department_name, dp.manager_id, dp.location_id); -- departments의 모든 컬럼
 
 SELECT * FROM DEPTS;
 
-CREATE TABLE jobs_it AS (SELECT * FROM JOBS);
+-- 5번 문제
+
+-- 5-1번
+CREATE TABLE jobs_it AS (SELECT * FROM JOBS WHERE min_salary > 6000);
+-- 아 WHERE절 안줬다 ㅋㅋ 에효
 
 SELECT * FROM jobs_it;
 
+-- 5-2번
 INSERT INTO jobs_it
-    VALUES('SEC_DEV', '보안개발팀', 6000, 19000);
+    VALUES('SEC_DEV', '보안개발팀', 6000, 19000); -- VALUES의 값을 바꿔서 3개의 행 INSERT함
 
-MERGE INTO jobs_it ji
+-- 5-3 + 5-4번
+MERGE INTO (SELECT * FROM jobs_it) ji
     USING
-        (SELECT * FROM jobs) j
+        (SELECT * FROM jobs WHERE min_salary > 5000) j
     ON
-        (j.min_salary > 0)
+        (ji.job_id = j.job_id) -- 
 WHEN MATCHED THEN
-    ji.min_salary = j.min_salary,
-    ji.max_salary = j.max_salary
+    UPDATE SET
+        ji.min_salary = j.min_salary,
+        ji.max_salary = j.max_salary
+WHEN NOT MATCHED THEN
+    INSERT VALUES
+        (j.job_id, j.job_title, j.min_salary, j.max_salary);
+
+-- 고민한 점!
+-- DEPTS를 롤백을 안해놔서 ON조건에서 (d.department_id = dp.department_id)가 성립이 안된다고 생각함
 
 
 
