@@ -196,7 +196,7 @@ SELECT * FROM(
             d.department_id, d.department_name
         FROM employees e LEFT JOIN departments d
         ON e.department_id = d.department_id
-        ORDER BY e.hire_date
+        ORDER BY hire_date --> 여기서 e.hire_date라고 해도 되고, 그냥 hire_date라고 해도 된다: hire_date가 employees테이블에만 있기 때문에
     ) tb
 )
 WHERE rn BETWEEN 1 AND 10;
@@ -204,7 +204,8 @@ WHERE rn BETWEEN 1 AND 10;
 
 /*
 문제 13. 
---EMPLOYEES 와 DEPARTMENTS 테이블에서 JOB_ID가 SA_MAN 사원의 정보의 LAST_NAME, JOB_ID, 
+--EMPLOYEES 와 DEPARTMENTS 테이블에서
+JOB_ID가 SA_MAN 사원의 정보의 LAST_NAME, JOB_ID, 
 DEPARTMENT_ID,DEPARTMENT_NAME을 출력하세요.
 */
 -- join
@@ -228,12 +229,58 @@ SELECT
     ) AS department_name
 FROM employees e
 WHERE job_id = 'SA_MAN';
+
+-- 선생님 (from절 서브쿼리 - 인라인뷰 사용)
+SELECT
+    tb.*, d.department_name
+FROM
+    (
+    SELECT
+        last_name, job_id, department_id
+    FROM employees
+    WHERE job_id = 'SA_MAN'
+    ) tb
+JOIN departments d
+ON tb.department_id = d.department_id;
 /*
 문제 14
---DEPARTMENT테이블에서 각 부서의 ID, NAME, MANAGER_ID와 부서에 속한 인원수를 출력하세요.
---인원수 기준 내림차순 정렬하세요.
---사람이 없는 부서는 출력하지 뽑지 않습니다.
+-- DEPARTMENT테이블에서 각 부서의 ID, NAME, MANAGER_ID와 부서에 속한 인원수를 출력하세요.
+-- 인원수 기준 내림차순 정렬하세요.
+-- 사람이 없는 부서는 출력하지 뽑지 않습니다.
 */
+-- 나: 스칼라 서브쿼리로 작성
+SELECT tb.* FROM
+    (
+        SELECT
+            d.department_id, d.department_name, d.manager_id,
+            (
+                SELECT
+                    COUNT(*)
+                FROM employees e
+                WHERE e.department_id = d.department_id
+                GROUP BY e.department_id
+            ) AS 인원수
+        FROM departments d
+    ) tb
+WHERE 인원수 IS NOT NULL
+ORDER BY 인원수 DESC; --> 이렇게 쿼리문으로 한번 더 감쌀 필요 그냥 별칭으로 작성해 주면 됬었다!ㄴ
+
+-- 선생님 -> JOIN하는 테이블로 인라인뷰
+SELECT
+    d.department_id, d.department_name, d.manager_id,
+    a.total
+FROM departments d
+JOIN
+    (
+    SELECT
+        department_id, COUNT(*) AS total
+    FROM employees
+    GROUP BY department_id
+    ) a
+ON d.department_id = a.department_id
+ORDER BY a.total DESC;
+-- '사람이 없는 부서는 출력하지 뽑지 않습니다' 의 조건 -> INNER JOIN으로 해결 가능, 사람이 없으면 조회가 안되니까!
+
 /*
 SELECT
     COUNT(*),
@@ -253,20 +300,7 @@ FROM employees e
 WHERE e.department_id = d.department_id
 GROUP BY e.department_id;
 */
-SELECT tb.* FROM(
-    SELECT
-        d.department_id, d.department_name, d.manager_id,
-        (
-        SELECT
-            COUNT(*)
-        FROM employeeS e
-        WHERE e.department_id = d.department_id
-        GROUP BY e.department_id
-        ) AS 인원수
-    FROM departments d
-) tb
-WHERE 인원수 IS NOT NULL
-ORDER BY 인원수 DESC;
+
 
 
 
@@ -275,6 +309,7 @@ ORDER BY 인원수 DESC;
 --부서에 대한 정보 전부와, 주소, 우편번호, 부서별 평균 연봉을 구해서 출력하세요.
 --부서별 평균이 없으면 0으로 출력하세요.
 */
+-- 내가 한 버전
 SELECT
     d.*,
     l.street_address, l.postal_code,
@@ -289,6 +324,48 @@ JOIN
     ) e
 ON e.department_id = d.department_id
 JOIN locations l ON l.location_id = d.location_id;
+
+-- 선생님
+-- 1. 먼저 부서 별 평균 연봉을 구해준다. -> employees테이블에서 조회
+SELECT
+    department_id,
+    TRUNC(AVG(salary), 2) AS result -- result에 소수점 자르기
+FROM employees
+GROUP BY department_id;
+
+-- 2. 1번을 인라인 뷰로 사용
+SELECT
+    d.*,
+    lc.street_address, lc.postal_code,
+    NVL(tb.result, 0) AS 부서별평균급여
+FROM departments d
+JOIN locations lc
+ON d.location_id = lc.location_id
+LEFT JOIN -- 부서별 평균이 없으면 출력되지 않는 조건에 맞게 LEFT JOIN을 사용해준다.
+    (
+    SELECT
+        department_id,
+        TRUNC(AVG(salary), 2) AS result -- result에 소수점 자르기
+    FROM employees
+    GROUP BY department_id
+    ) tb
+ON d.department_id = tb.department_id;
+
+-- 스칼라 사용 버전
+SELECT
+    d.*,
+    lc.street_address, lc.postal_code,
+    NVL(
+        (
+        SELECT TRUNC(AVG(e.salary), 0)
+        FROM employees e
+        WHERE
+        )
+        )
+FROM locations loc
+
+
+
 
 /*
 SELECT
@@ -354,7 +431,32 @@ FROM
     )
 WHERE rn BETWEEN 1 AND 10;
 
-
+-- 선생님 버전
+SELECT * FROM
+    (
+    SELECT ROWNUM AS rn, tbl2.*
+        FROM
+        (
+        SELECT
+            d.*,
+            loc.street_address, loc.postal_code,
+            NVL(tbl.result, 0) AS 부서별평균급여
+        FROM departments d
+        JOIN locations loc
+        ON d.location_id = loc.location_id
+        LEFT JOIN
+            (
+            SELECT
+                department_id,
+                TRUNC(AVG(salary), 0) AS result
+            FROM employees
+            GROUP BY department_id
+            ) tbl
+        ON d.department_id = tbl.department_id
+        ORDER BY d.department_id DESC
+        ) tbl2
+    )
+WHERE rn > 0 AND rn <= 10;
 
 
 
