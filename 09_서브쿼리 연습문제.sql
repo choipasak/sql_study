@@ -458,6 +458,8 @@ SELECT * FROM
     )
 WHERE rn > 0 AND rn <= 10;
 
+SELECT MAX(employee_id) FROM employees;
+
 
 
 

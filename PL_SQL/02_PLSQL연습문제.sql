@@ -30,14 +30,18 @@ DECLARE
     max_emp_id employees.employee_id%TYPE;
 BEGIN
     SELECT
-        MAX(employee_id)+1 AS employee_id
+        MAX(employee_id)
     INTO max_emp_id
     FROM employees;
     
     INSERT INTO emps
-    VALUES(max_emp_id, 'steven', 'stevenjobs', sysdate, 'CEO');
+        (employee_id, last_name, email, hire_date, job_id)
+    VALUES
+        (max_emp_id + 1, 'steven', 'stevenjobs', sysdate, 'CEO');
     
 END;
+
+SELECT * FROM emps;
 
 
 

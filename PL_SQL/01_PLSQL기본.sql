@@ -62,7 +62,7 @@ END; -- 결과: Steven-Executive
 -- 테이블명.컬럼명%TYPE을 사용함으로써 타입을 일일히 확인해야 하는 번거로움을 방지할 수 있다.
 DECLARE
     v_emp_name employees.first_name%TYPE; -- employees테이블의 first_name컬럼의 타입과 똑같은 타입을 뜻함
-    v_dep_name employees.department_name%TYPE; -- 테이블에 찾아가서 타입을 알아 올 필요가 없어짐!
+    v_dep_name departments.department_name%TYPE; -- 테이블에 찾아가서 타입을 알아 올 필요가 없어짐!
 BEGIN
     SELECT
         e.first_name,
