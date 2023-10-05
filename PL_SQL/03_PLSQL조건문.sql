@@ -93,7 +93,7 @@ BEGIN
         v_salary, v_commission_pct
     FROM employees
     WHERE department_id = v_department_id
-    AND ROWNUM = 1;
+    AND ROWNUM = 1; -- department_id가 같은 애들중에 첫번째 사람만 조회.
     
     dbms_output.put_line('조회된 급여: ' || v_salary);
     
@@ -106,7 +106,7 @@ BEGIN
         dbms_output.put_line('커미션이 0.15이하임!');
     END IF; -- 바깥쪽 IF문도 종료해 준다.
     
-END; --QQQQQQQQQQQQQQQQQQQQ
+END;
 
 
 

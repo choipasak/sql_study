@@ -290,7 +290,7 @@ END;
 DECLARE
     msg VARCHAR2(100);
 BEGIN
-    my_new_job_proc('merong', msg);
+    my_new_job_proc('IT_PROG', msg);
     dbms_output.put_line(msg);
 END;
 
